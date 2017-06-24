@@ -27,8 +27,7 @@ $(function() {
          */
          it('url should be defined and not empty', function() {
             allFeeds.forEach(function(element) {
-                expect(element.url).toBeDefined();
-                expect(element.url.length).not.toBe(0);
+                detection(element.url);
             });
          });
 
@@ -37,10 +36,14 @@ $(function() {
          */
          it('name should be defined and not empty', function() {
             allFeeds.forEach(function(element) {
-                expect(element.name).toBeDefined();
-                expect(element.name.length).not.toBe(0);
+                detection(element.name);
             });
          });
+
+         function detection(element) {
+            expect(element).toBeDefined();
+            expect(element.length).not.toBe(0);
+         }
     });
 
     /* TODO: 写一个叫做 "The menu" 的测试用例 */
@@ -49,16 +52,19 @@ $(function() {
          * 写一个测试用例保证菜单元素默认是隐藏的。你需要分析 html 和 css
          * 来搞清楚我们是怎么实现隐藏/展示菜单元素的。
          */
-         var bodyElement,
-            bodyClassName;
+         var bodyElement;
+
 
          beforeEach(function() {
-            bodyElement =  $('body')[0];
+            bodyElement =  $('body');
          });
 
+         function checkBody() {
+            return bodyElement.hasClass("menu-hidden");
+         }
+
          it('menu should be hide in default', function() {
-            bodyClassName = bodyElement.className;
-             expect(bodyClassName).toBe("menu-hidden");
+             expect(checkBody()).toBe(true);
          });
          /* TODO:
           * 写一个测试用例保证当菜单图标被点击的时候菜单会切换可见状态。这个
@@ -66,7 +72,6 @@ $(function() {
           * 再次点击的时候是否隐藏。
           */
           it('button can control menu visible', function() {
-            bodyClassName = bodyElement.className;
 
             //測試點擊按鈕函數
             function testButton() {
@@ -74,11 +79,11 @@ $(function() {
             }
 
             //開關各一次，測試狀態是否正確
-            if(bodyClassName === "menu-hidden") {
+            if(checkBody() === true) {
                 testButton();
-                expect(bodyElement.className).toBe("");
+                expect(checkBody()).toBe(false);
                 testButton();
-                expect(bodyElement.className).toBe("menu-hidden"); 
+                expect(checkBody()).toBe(true); 
             }
          });
     });
@@ -95,16 +100,13 @@ $(function() {
          var contentNumber;
 
          beforeEach(function(done) {
-            loadFeed(0, function() {
-                done();
-            });
+            loadFeed(0, done);
          });
 
          //測試.feed中是否至少有取得1個entry內容
-         it("should get feed content", function(done) {
+         it("should get feed content", function() {
             contentNumber = $('.feed').children().length;
             expect(contentNumber).toBeGreaterThan(0);
-            done();
          });
     });
 
@@ -114,27 +116,25 @@ $(function() {
          * 写一个测试保证当用 loadFeed 函数加载一个新源的时候内容会真的改变。
          * 记住，loadFeed() 函数是异步的。
          */
-         var contentBefore,
-            contentAfter;
+         var content = [];
 
-        //測試取得第二個源的ajax的首項url
+         function getLink() {
+            content.push($(".feed .entry-link")[0].href);
+         } 
+        //測試取得第二個源和第一個源的ajax的首項url
          beforeAll(function(done) {
             loadFeed(1, function() {
-                contentBefore = $(".feed .entry-link")[0].href;
-                done();
-            });
-         });
-         //測試取得第二個源的ajax的首項url
-         beforeEach(function(done) {
-            loadFeed(0, function() {
-                contentAfter = $(".feed .entry-link")[0].href;
-                done();
+                getLink();
+                loadFeed(0,  function() {
+                    getLink();
+                    done();
+                });
             });
          });
 
          //比較兩次的url是否相同
          it("should able to change new feed", function(done) {
-            expect(contentBefore).not.toEqual(contentAfter);
+            expect(content[0]).not.toEqual(content[1]);
             done();
          });
     });
